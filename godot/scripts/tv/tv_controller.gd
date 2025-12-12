@@ -195,6 +195,18 @@ func _get_puzzle_data_for_current_state() -> Dictionary:
 	match memory:
 		Constants.Memory.TOMTEGROETEN:
 			return _get_memory_1_puzzle(layer)
+		Constants.Memory.LUCIA:
+			return _get_memory_2_puzzle(layer)
+		Constants.Memory.JULGRANEN:
+			return _get_memory_3_puzzle(layer)
+		Constants.Memory.RENARNA:
+			return _get_memory_4_puzzle(layer)
+		Constants.Memory.SLADEN:
+			return _get_memory_5_puzzle(layer)
+		Constants.Memory.JULKLAPPARNA:
+			return _get_memory_6_puzzle(layer)
+		Constants.Memory.JULSTJARNAN:
+			return _get_memory_7_puzzle(layer)
 		_:
 			return {"puzzle_type": "placeholder", "message": "Puzzle not implemented"}
 
@@ -241,6 +253,293 @@ func _get_memory_1_puzzle(layer: int) -> Dictionary:
 					{"id": "in_pot", "name": "[SWEDISH: In the pot]"}
 				],
 				"correct_location": "cupboard"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_2_puzzle(layer: int) -> Dictionary:
+	# Memory 2: Lucia - The Lucia procession got lost in the dark
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "tap_targets",
+				"title": "[SWEDISH: Light the candles!]",
+				"instructions": "[SWEDISH: Tap the candles in order from 1 to 7 to light the way]",
+				"targets": [
+					{"id": "candle_1", "label": "1", "order": 1},
+					{"id": "candle_2", "label": "2", "order": 2},
+					{"id": "candle_3", "label": "3", "order": 3},
+					{"id": "candle_4", "label": "4", "order": 4},
+					{"id": "candle_5", "label": "5", "order": 5},
+					{"id": "candle_6", "label": "6", "order": 6},
+					{"id": "candle_7", "label": "7", "order": 7}
+				],
+				"require_order": true
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: Decode the Lucia song!]",
+				"instructions": "[SWEDISH: What song does Lucia sing?]",
+				"cipher_text": "19-1-14-11-20-1 12-21-3-9-1",  # S-A-N-K-T-A L-U-C-I-A
+				"hint": "[SWEDISH: A=1, B=2, C=3... Two words]",
+				"answer": "SANKTA LUCIA"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: Guide the Lucia procession!]",
+				"instructions": "[SWEDISH: Where should the procession go? Discuss together!]",
+				"locations": [
+					{"id": "kitchen", "name": "[SWEDISH: Kitchen]"},
+					{"id": "bedroom", "name": "[SWEDISH: Bedroom]"},
+					{"id": "tomtens_cottage", "name": "[SWEDISH: Tomten's cottage]"},
+					{"id": "barn", "name": "[SWEDISH: The barn]"},
+					{"id": "forest", "name": "[SWEDISH: Into the forest]"}
+				],
+				"correct_location": "tomtens_cottage"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_3_puzzle(layer: int) -> Dictionary:
+	# Memory 3: Julgranen - The Christmas tree is decorated wrong
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "drag_drop",
+				"title": "[SWEDISH: Decorate the Christmas tree!]",
+				"instructions": "[SWEDISH: Drag the right decorations onto the tree]",
+				"items": [
+					{"id": "star", "name": "[SWEDISH: Star]", "correct": true},
+					{"id": "baubles", "name": "[SWEDISH: Baubles]", "correct": true},
+					{"id": "tinsel", "name": "[SWEDISH: Tinsel]", "correct": true},
+					{"id": "lights", "name": "[SWEDISH: Lights]", "correct": true},
+					{"id": "socks", "name": "[SWEDISH: Socks]", "correct": false},
+					{"id": "spoon", "name": "[SWEDISH: Wooden spoon]", "correct": false}
+				],
+				"target": "tree",
+				"required_correct": 4
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: What goes on top?]",
+				"instructions": "[SWEDISH: Decode what belongs at the top of the tree]",
+				"cipher_text": "19-20-10-1-18-14-1",  # S-T-J-Ä-R-N-A (Ä=A for simplicity)
+				"hint": "[SWEDISH: A=1, B=2... It shines bright!]",
+				"answer": "STJARNA"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: Where should the tree stand?]",
+				"instructions": "[SWEDISH: Pick the best spot for the Christmas tree!]",
+				"locations": [
+					{"id": "corner", "name": "[SWEDISH: In the corner]"},
+					{"id": "window", "name": "[SWEDISH: By the window]"},
+					{"id": "center", "name": "[SWEDISH: In the center]"},
+					{"id": "outside", "name": "[SWEDISH: Outside]"},
+					{"id": "kitchen", "name": "[SWEDISH: In the kitchen]"}
+				],
+				"correct_location": "window"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_4_puzzle(layer: int) -> Dictionary:
+	# Memory 4: Renarna - The reindeer won't respond, Tomten forgot their names
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "tap_targets",
+				"title": "[SWEDISH: Find the reindeer!]",
+				"instructions": "[SWEDISH: Tap all the reindeer hiding in the snow]",
+				"targets": [
+					{"id": "reindeer_1", "label": "🦌", "hidden": true},
+					{"id": "reindeer_2", "label": "🦌", "hidden": true},
+					{"id": "reindeer_3", "label": "🦌", "hidden": true},
+					{"id": "reindeer_4", "label": "🦌", "hidden": true},
+					{"id": "snowman", "label": "⛄", "hidden": false, "decoy": true},
+					{"id": "tree", "label": "🌲", "hidden": false, "decoy": true}
+				],
+				"require_order": false,
+				"find_count": 4
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: Remember the lead reindeer!]",
+				"instructions": "[SWEDISH: Decode the name of the famous red-nosed reindeer]",
+				"cipher_text": "18-21-4-15-12-6",  # R-U-D-O-L-F
+				"hint": "[SWEDISH: A=1, B=2, C=3... His nose is red!]",
+				"answer": "RUDOLF"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: Who leads the sleigh?]",
+				"instructions": "[SWEDISH: Which reindeer should be at the front?]",
+				"locations": [
+					{"id": "dasher", "name": "[SWEDISH: Dasher]"},
+					{"id": "dancer", "name": "[SWEDISH: Dancer]"},
+					{"id": "rudolf", "name": "[SWEDISH: Rudolf]"},
+					{"id": "comet", "name": "[SWEDISH: Comet]"},
+					{"id": "blitzen", "name": "[SWEDISH: Blitzen]"}
+				],
+				"correct_location": "rudolf"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_5_puzzle(layer: int) -> Dictionary:
+	# Memory 5: Släden - Tomten attached wrong things to the sleigh
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "drag_drop",
+				"title": "[SWEDISH: Fix the sleigh!]",
+				"instructions": "[SWEDISH: Drag the correct parts to the sleigh]",
+				"items": [
+					{"id": "runners", "name": "[SWEDISH: Runners]", "correct": true},
+					{"id": "reins", "name": "[SWEDISH: Reins]", "correct": true},
+					{"id": "bells", "name": "[SWEDISH: Bells]", "correct": true},
+					{"id": "seat", "name": "[SWEDISH: Seat]", "correct": true},
+					{"id": "wheels", "name": "[SWEDISH: Wheels]", "correct": false},
+					{"id": "propeller", "name": "[SWEDISH: Propeller]", "correct": false}
+				],
+				"target": "sleigh",
+				"required_correct": 4
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: The magic word!]",
+				"instructions": "[SWEDISH: What makes the sleigh fly?]",
+				"cipher_text": "13-1-7-9",  # M-A-G-I
+				"hint": "[SWEDISH: A=1, B=2, C=3... Something magical!]",
+				"answer": "MAGI"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: What's missing?]",
+				"instructions": "[SWEDISH: The sleigh still needs one more thing!]",
+				"locations": [
+					{"id": "lantern", "name": "[SWEDISH: A lantern]"},
+					{"id": "blanket", "name": "[SWEDISH: A warm blanket]"},
+					{"id": "gift_sack", "name": "[SWEDISH: The gift sack]"},
+					{"id": "map", "name": "[SWEDISH: A map]"},
+					{"id": "compass", "name": "[SWEDISH: A compass]"}
+				],
+				"correct_location": "gift_sack"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_6_puzzle(layer: int) -> Dictionary:
+	# Memory 6: Julklapparna - Gift tags fell off, who gets what?
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "drag_drop",
+				"title": "[SWEDISH: Sort the presents!]",
+				"instructions": "[SWEDISH: Match the gifts to who should receive them]",
+				"items": [
+					{"id": "toy_car", "name": "[SWEDISH: Toy car]", "correct": true, "recipient": "child"},
+					{"id": "book", "name": "[SWEDISH: Book]", "correct": true, "recipient": "grandpa"},
+					{"id": "scarf", "name": "[SWEDISH: Scarf]", "correct": true, "recipient": "grandma"},
+					{"id": "doll", "name": "[SWEDISH: Doll]", "correct": true, "recipient": "child"},
+					{"id": "coal", "name": "[SWEDISH: Coal]", "correct": false},
+					{"id": "rock", "name": "[SWEDISH: Rock]", "correct": false}
+				],
+				"target": "gift_pile",
+				"required_correct": 4
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: Read the gift tag!]",
+				"instructions": "[SWEDISH: Decode the name on the mysterious gift]",
+				"cipher_text": "20-15-13-20-5-14",  # T-O-M-T-E-N
+				"hint": "[SWEDISH: A=1, B=2, C=3... Who delivers the gifts?]",
+				"answer": "TOMTEN"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: Where do gifts belong?]",
+				"instructions": "[SWEDISH: Where should the presents be placed?]",
+				"locations": [
+					{"id": "under_tree", "name": "[SWEDISH: Under the tree]"},
+					{"id": "on_table", "name": "[SWEDISH: On the table]"},
+					{"id": "in_stockings", "name": "[SWEDISH: In the stockings]"},
+					{"id": "outside", "name": "[SWEDISH: Outside the door]"},
+					{"id": "in_bed", "name": "[SWEDISH: In bed]"}
+				],
+				"correct_location": "under_tree"
+			}
+
+		_:
+			return {}
+
+
+func _get_memory_7_puzzle(layer: int) -> Dictionary:
+	# Memory 7: Julstjärnan - Can't find the guiding star (Final memory!)
+	match layer:
+		Constants.PuzzleLayer.KIDS:
+			return {
+				"puzzle_type": "sequence",
+				"title": "[SWEDISH: Find the Christmas star!]",
+				"instructions": "[SWEDISH: Tap the stars in the right order to reveal the Christmas star]",
+				"sequence": ["blue", "yellow", "red", "green"],
+				"display_sequence": true,
+				"sequence_length": 4
+			}
+
+		Constants.PuzzleLayer.ADULTS:
+			return {
+				"puzzle_type": "cipher",
+				"title": "[SWEDISH: Which direction?]",
+				"instructions": "[SWEDISH: The star always points the way. Which direction?]",
+				"cipher_text": "14-15-18-18",  # N-O-R-R (North in Swedish)
+				"hint": "[SWEDISH: A=1, B=2, C=3... Look to the cold!]",
+				"answer": "NORR"
+			}
+
+		Constants.PuzzleLayer.TOGETHER:
+			return {
+				"puzzle_type": "location_select",
+				"title": "[SWEDISH: Where is the star?]",
+				"instructions": "[SWEDISH: Look up! Where in the sky is the Christmas star?]",
+				"locations": [
+					{"id": "east", "name": "[SWEDISH: In the east]"},
+					{"id": "west", "name": "[SWEDISH: In the west]"},
+					{"id": "north", "name": "[SWEDISH: In the north]"},
+					{"id": "south", "name": "[SWEDISH: In the south]"},
+					{"id": "straight_up", "name": "[SWEDISH: Straight up]"}
+				],
+				"correct_location": "north"
 			}
 
 		_:
