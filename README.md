@@ -81,9 +81,9 @@ Each memory follows the same flow:
 - [x] Auto-pass after failed attempts
 - [x] DevContainer setup for easy development
 - [x] Docker Compose support
+- [x] Memories 2-7 puzzle implementations (all 7 memories playable!)
 
 ### In Progress
-- [ ] Memories 2-7 puzzle implementations
 - [ ] Swedish text localization
 - [ ] Sound effects and music
 - [ ] More polished animations
