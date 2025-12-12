@@ -6,19 +6,43 @@ An old Swedish tomte (Christmas gnome) has lost his memories and can't remember 
 
 ## Quick Start
 
-See [docs/setup.md](docs/setup.md) for detailed setup instructions.
+### Option 1: DevContainer (Recommended)
 
-### Requirements
+The easiest way to get started is using VS Code with the DevContainer:
+
+1. Install [VS Code](https://code.visualstudio.com/) and [Docker](https://www.docker.com/)
+2. Install the "Dev Containers" VS Code extension
+3. Open this folder in VS Code
+4. Click "Reopen in Container" when prompted
+5. Wait for the container to build (~5 minutes first time)
+6. Run: `./scripts/start-all.sh`
+7. Open http://localhost:6080/vnc.html to see Godot
+8. Run `./scripts/run-game.sh` to start the game
+
+### Option 2: Docker Compose
+
+```bash
+docker compose up
+# Open http://localhost:6080/vnc.html
+# In another terminal: docker compose exec godot ./scripts/run-game.sh
+```
+
+### Option 3: Local Installation
+
+See [docs/setup.md](docs/setup.md) for detailed local setup instructions.
+
+#### Requirements
 - Godot Engine 4.2+
 - Python 3.10+
 - Webcam
 - Tablet with web browser
 - TV/monitor
 
-### Running
+#### Running Locally
 1. Open the `godot/` project in Godot and run (F5)
 2. Start the camera service: `cd camera_service && python main.py`
-3. Open the tablet browser and connect to the displayed WebSocket URL
+3. Export tablet and serve: `./scripts/export-tablet.sh && ./scripts/serve-tablet.sh`
+4. Open the tablet browser and connect to the displayed WebSocket URL
 
 ## Game Overview
 
@@ -55,6 +79,8 @@ Each memory follows the same flow:
 - [x] Basic silhouette graphics
 - [x] Python camera service with pose + color detection
 - [x] Auto-pass after failed attempts
+- [x] DevContainer setup for easy development
+- [x] Docker Compose support
 
 ### In Progress
 - [ ] Memories 2-7 puzzle implementations
