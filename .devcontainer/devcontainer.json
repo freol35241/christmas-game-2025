@@ -1,0 +1,77 @@
+{
+  "name": "Tomtens Försvunna Minnen",
+  "build": {
+    "dockerfile": "Dockerfile",
+    "context": ".."
+  },
+  "features": {
+    "ghcr.io/devcontainers/features/common-utils:2": {
+      "installZsh": true,
+      "configureZshAsDefaultShell": true,
+      "installOhMyZsh": true,
+      "username": "vscode",
+      "userUid": "1000",
+      "userGid": "1000"
+    },
+    "ghcr.io/devcontainers/features/python:1": {
+      "version": "3.11",
+      "installTools": true
+    },
+    "ghcr.io/devcontainers/features/node:1": {
+      "version": "lts"
+    }
+  },
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "geequlim.godot-tools",
+        "ms-python.python",
+        "ms-python.vscode-pylance",
+        "esbenp.prettier-vscode",
+        "EditorConfig.EditorConfig"
+      ],
+      "settings": {
+        "python.defaultInterpreterPath": "/home/vscode/.local/bin/python",
+        "godotTools.editorPath.godot4": "/usr/local/bin/godot",
+        "editor.formatOnSave": true,
+        "files.associations": {
+          "*.gd": "gdscript",
+          "*.tscn": "ini",
+          "*.tres": "ini"
+        }
+      }
+    }
+  },
+  "forwardPorts": [
+    8765,
+    8000,
+    6080
+  ],
+  "portsAttributes": {
+    "8765": {
+      "label": "WebSocket Server",
+      "onAutoForward": "notify"
+    },
+    "8000": {
+      "label": "Tablet Web Server",
+      "onAutoForward": "openBrowser"
+    },
+    "6080": {
+      "label": "noVNC (Godot Display)",
+      "onAutoForward": "openBrowser"
+    }
+  },
+  "postCreateCommand": "bash .devcontainer/post-create.sh",
+  "postStartCommand": "bash .devcontainer/post-start.sh",
+  "remoteUser": "vscode",
+  "containerEnv": {
+    "DISPLAY": ":1",
+    "GODOT_EDITOR": "/usr/local/bin/godot"
+  },
+  "runArgs": [
+    "--device=/dev/dri"
+  ],
+  "mounts": [
+    "source=/dev/shm,target=/dev/shm,type=bind"
+  ]
+}
