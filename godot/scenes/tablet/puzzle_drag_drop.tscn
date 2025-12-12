@@ -1,0 +1,330 @@
+[gd_scene load_steps=2 format=3 uid="uid://drv8qn4xr5pkzd"]
+
+[sub_resource type="GDScript" id="GDScript_dragdrop"]
+script/source = "extends Control
+## Drag and drop puzzle for kids - Memory 1 (porridge ingredients)
+
+signal puzzle_complete(success: bool, result: Dictionary)
+
+@onready var title_label: Label = $TitleLabel
+@onready var instruction_label: Label = $InstructionLabel
+@onready var bowl_target: Control = $BowlTarget
+@onready var bowl_visual: Polygon2D = $BowlTarget/BowlVisual
+@onready var items_container: Control = $ItemsContainer
+@onready var feedback_label: Label = $FeedbackLabel
+@onready var progress_label: Label = $ProgressLabel
+
+var puzzle_data: Dictionary = {}
+var _items: Array[Control] = []
+var _dragging_item: Control = null
+var _drag_offset: Vector2 = Vector2.ZERO
+var _correct_items_placed: Array[String] = []
+var _required_correct: int = 3
+
+# Item colors
+const ITEM_COLORS := {
+	\"mjol\": Color(0.95, 0.93, 0.85),  # Flour - off-white
+	\"ris\": Color(0.95, 0.95, 0.9),    # Rice - white
+	\"mjolk\": Color(0.98, 0.98, 1.0),  # Milk - white
+	\"socker\": Color(1.0, 1.0, 1.0),   # Sugar - pure white
+	\"salt\": Color(0.9, 0.9, 0.9),     # Salt - gray-white
+	\"kanel\": Color(0.6, 0.4, 0.2),    # Cinnamon - brown
+}
+
+
+func _ready() -> void:
+	bowl_visual.polygon = _create_bowl_shape()
+	bowl_visual.color = Color(0.4, 0.35, 0.3)
+
+
+func setup(data: Dictionary) -> void:
+	puzzle_data = data
+
+	title_label.text = data.get(\"title\", \"[SWEDISH: Drag ingredients!]\")
+	instruction_label.text = data.get(\"instructions\", \"[SWEDISH: Drag correct items into the bowl]\")
+	_required_correct = data.get(\"required_correct\", 3)
+
+	var items: Array = data.get(\"items\", [])
+	_create_draggable_items(items)
+	_update_progress()
+
+
+func _create_bowl_shape() -> PackedVector2Array:
+	return PackedVector2Array([
+		Vector2(-80, -20),
+		Vector2(-100, 60),
+		Vector2(-80, 80),
+		Vector2(80, 80),
+		Vector2(100, 60),
+		Vector2(80, -20),
+	])
+
+
+func _create_draggable_items(items: Array) -> void:
+	# Clear existing items
+	for item in _items:
+		item.queue_free()
+	_items.clear()
+
+	# Create items in a circle around the bowl
+	var center := Vector2(get_viewport_rect().size.x / 2, get_viewport_rect().size.y / 2)
+	var radius := 280.0
+
+	for i in range(items.size()):
+		var item_data: Dictionary = items[i]
+		var angle := (i * TAU / items.size()) - TAU / 4
+
+		var item := _create_draggable_item(item_data)
+		var pos := center + Vector2(cos(angle) * radius, sin(angle) * radius)
+		item.position = pos - item.size / 2
+		item.set_meta(\"original_position\", item.position)
+
+		items_container.add_child(item)
+		_items.append(item)
+
+
+func _create_draggable_item(item_data: Dictionary) -> Control:
+	var panel := Panel.new()
+	panel.custom_minimum_size = Vector2(120, 100)
+	panel.size = Vector2(120, 100)
+
+	# Store item data
+	panel.set_meta(\"item_id\", item_data.get(\"id\", \"\"))
+	panel.set_meta(\"item_name\", item_data.get(\"name\", \"\"))
+	panel.set_meta(\"is_correct\", item_data.get(\"correct\", false))
+
+	# Create visual
+	var color_rect := ColorRect.new()
+	color_rect.color = ITEM_COLORS.get(item_data.get(\"id\", \"\"), Color(0.8, 0.8, 0.8))
+	color_rect.set_anchors_preset(Control.PRESET_FULL_RECT)
+	color_rect.offset_left = 5
+	color_rect.offset_top = 5
+	color_rect.offset_right = -5
+	color_rect.offset_bottom = -30
+	panel.add_child(color_rect)
+
+	# Create label
+	var label := Label.new()
+	label.text = item_data.get(\"name\", \"?\")
+	label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	label.set_anchors_preset(Control.PRESET_BOTTOM_WIDE)
+	label.offset_top = -25
+	label.add_theme_font_size_override(\"font_size\", 14)
+	panel.add_child(label)
+
+	# Connect input
+	panel.gui_input.connect(_on_item_input.bind(panel))
+
+	return panel
+
+
+func _on_item_input(event: InputEvent, item: Control) -> void:
+	if event is InputEventMouseButton:
+		if event.button_index == MOUSE_BUTTON_LEFT:
+			if event.pressed:
+				_start_drag(item, event.position)
+			else:
+				_end_drag()
+
+	elif event is InputEventMouseMotion and _dragging_item == item:
+		_update_drag(event.position)
+
+
+func _input(event: InputEvent) -> void:
+	# Handle drag even when mouse moves outside item
+	if _dragging_item and event is InputEventMouseMotion:
+		_dragging_item.position = event.position - _drag_offset
+
+
+func _start_drag(item: Control, pos: Vector2) -> void:
+	_dragging_item = item
+	_drag_offset = pos
+	item.z_index = 10  # Bring to front
+
+
+func _update_drag(pos: Vector2) -> void:
+	if _dragging_item:
+		_dragging_item.position += pos - _drag_offset
+
+
+func _end_drag() -> void:
+	if not _dragging_item:
+		return
+
+	var item := _dragging_item
+	_dragging_item = null
+	item.z_index = 0
+
+	# Check if dropped on bowl
+	var item_center := item.position + item.size / 2
+	var bowl_rect := Rect2(
+		bowl_target.global_position - Vector2(100, 80),
+		Vector2(200, 160)
+	)
+
+	if bowl_rect.has_point(item_center):
+		_handle_drop_on_bowl(item)
+	else:
+		# Return to original position
+		var original_pos: Vector2 = item.get_meta(\"original_position\")
+		var tween := create_tween()
+		tween.tween_property(item, \"position\", original_pos, 0.2)
+
+
+func _handle_drop_on_bowl(item: Control) -> void:
+	var item_id: String = item.get_meta(\"item_id\")
+	var is_correct: bool = item.get_meta(\"is_correct\")
+
+	if is_correct:
+		# Success! Item stays in bowl
+		_correct_items_placed.append(item_id)
+		item.visible = false
+
+		feedback_label.text = \"[SWEDISH: Correct!]\"
+		feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.SUCCESS_GREEN)
+
+		# Add visual to bowl
+		_add_item_to_bowl_visual(item_id)
+
+		_update_progress()
+
+		# Check if puzzle complete
+		if _correct_items_placed.size() >= _required_correct:
+			await get_tree().create_timer(0.5).timeout
+			_complete_puzzle(true)
+	else:
+		# Wrong item - bounce back
+		feedback_label.text = \"[SWEDISH: That's not right for porridge!]\"
+		feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.ERROR_RED)
+
+		var original_pos: Vector2 = item.get_meta(\"original_position\")
+		var tween := create_tween()
+
+		# Shake animation
+		tween.tween_property(item, \"position:x\", item.position.x + 10, 0.05)
+		tween.tween_property(item, \"position:x\", item.position.x - 10, 0.05)
+		tween.tween_property(item, \"position:x\", item.position.x + 5, 0.05)
+		tween.tween_property(item, \"position:x\", item.position.x, 0.05)
+		tween.tween_property(item, \"position\", original_pos, 0.2)
+
+
+func _add_item_to_bowl_visual(item_id: String) -> void:
+	# Add a small colored circle to represent the ingredient in the bowl
+	var indicator := ColorRect.new()
+	indicator.color = ITEM_COLORS.get(item_id, Color(0.8, 0.8, 0.8))
+	indicator.size = Vector2(30, 30)
+	indicator.position = Vector2(
+		randf_range(-40, 40) - 15,
+		randf_range(-10, 30) - 15
+	)
+	bowl_target.add_child(indicator)
+
+
+func _update_progress() -> void:
+	progress_label.text = \"%d / %d\" % [_correct_items_placed.size(), _required_correct]
+
+
+func _complete_puzzle(success: bool) -> void:
+	feedback_label.text = \"[SWEDISH: Perfect! The porridge is ready!]\"
+	feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.HIGHLIGHT_GOLD)
+
+	# Celebration animation
+	var tween := create_tween()
+	tween.tween_property(bowl_target, \"scale\", Vector2(1.1, 1.1), 0.2)
+	tween.tween_property(bowl_target, \"scale\", Vector2(1.0, 1.0), 0.2)
+
+	await get_tree().create_timer(1.0).timeout
+
+	puzzle_complete.emit(success, {
+		\"items_placed\": _correct_items_placed
+	})
+"
+
+[node name="PuzzleDragDrop" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource("GDScript_dragdrop")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.545098, 0.270588, 0.0745098, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 30.0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 90.0
+offset_right = 400.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+autowrap_mode = 2
+
+[node name="BowlTarget" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+grow_horizontal = 2
+grow_vertical = 2
+
+[node name="BowlVisual" type="Polygon2D" parent="BowlTarget"]
+
+[node name="ItemsContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="FeedbackLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = -60.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
+
+[node name="ProgressLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -50.0
+offset_top = -50.0
+offset_right = 50.0
+offset_bottom = -20.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1

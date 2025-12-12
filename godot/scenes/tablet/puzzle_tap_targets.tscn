@@ -1,0 +1,192 @@
+[gd_scene load_steps=2 format=3 uid="uid://dtv1qn7xr8pkcg"]
+
+[sub_resource type="GDScript" id="GDScript_tap"]
+script/source = "extends Control
+## Tap targets puzzle - Generic tap-to-select puzzle
+
+signal puzzle_complete(success: bool, result: Dictionary)
+
+@onready var title_label: Label = $TitleLabel
+@onready var instruction_label: Label = $InstructionLabel
+@onready var targets_container: Control = $TargetsContainer
+@onready var progress_label: Label = $ProgressLabel
+@onready var feedback_label: Label = $FeedbackLabel
+
+var puzzle_data: Dictionary = {}
+var _targets: Array[Control] = []
+var _correct_targets: Array[String] = []
+var _tapped_targets: Array[String] = []
+var _required_taps: int = 0
+
+
+func _ready() -> void:
+	pass
+
+
+func setup(data: Dictionary) -> void:
+	puzzle_data = data
+
+	title_label.text = data.get(\"title\", \"[SWEDISH: Tap the targets!]\")
+	instruction_label.text = data.get(\"instructions\", \"[SWEDISH: Find and tap all the correct items]\")
+
+	var targets: Array = data.get(\"targets\", [])
+	_required_taps = data.get(\"required_taps\", targets.size())
+
+	_create_targets(targets)
+	_update_progress()
+
+
+func _create_targets(targets: Array) -> void:
+	for child in targets_container.get_children():
+		child.queue_free()
+	_targets.clear()
+	_correct_targets.clear()
+
+	for target_data in targets:
+		var target := _create_target(target_data)
+		targets_container.add_child(target)
+		_targets.append(target)
+
+		if target_data.get(\"correct\", false):
+			_correct_targets.append(target_data.get(\"id\", \"\"))
+
+
+func _create_target(data: Dictionary) -> Control:
+	var button := Button.new()
+	button.custom_minimum_size = Vector2(100, 100)
+	button.text = data.get(\"icon\", \"?\")
+	button.add_theme_font_size_override(\"font_size\", 48)
+
+	var target_id: String = data.get(\"id\", \"\")
+	var is_correct: bool = data.get(\"correct\", false)
+
+	button.set_meta(\"target_id\", target_id)
+	button.set_meta(\"is_correct\", is_correct)
+
+	button.pressed.connect(_on_target_tapped.bind(button))
+
+	# Position randomly
+	button.position = Vector2(
+		randf_range(50, get_viewport_rect().size.x - 150),
+		randf_range(200, get_viewport_rect().size.y - 200)
+	)
+
+	return button
+
+
+func _on_target_tapped(button: Control) -> void:
+	var target_id: String = button.get_meta(\"target_id\")
+	var is_correct: bool = button.get_meta(\"is_correct\")
+
+	if is_correct:
+		_tapped_targets.append(target_id)
+		button.disabled = true
+		button.modulate = Constants.Colors.SUCCESS_GREEN
+
+		feedback_label.text = \"[SWEDISH: Found one!]\"
+		feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.SUCCESS_GREEN)
+
+		_update_progress()
+
+		if _tapped_targets.size() >= _required_taps:
+			await get_tree().create_timer(0.5).timeout
+			_complete_puzzle(true)
+	else:
+		feedback_label.text = \"[SWEDISH: Not that one!]\"
+		feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.ERROR_RED)
+
+		# Shake
+		var original_pos := button.position
+		var tween := create_tween()
+		tween.tween_property(button, \"position:x\", original_pos.x + 5, 0.05)
+		tween.tween_property(button, \"position:x\", original_pos.x - 5, 0.05)
+		tween.tween_property(button, \"position:x\", original_pos.x, 0.05)
+
+
+func _update_progress() -> void:
+	progress_label.text = \"%d / %d\" % [_tapped_targets.size(), _required_taps]
+
+
+func _complete_puzzle(success: bool) -> void:
+	feedback_label.text = \"[SWEDISH: Great job!]\"
+	feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.HIGHLIGHT_GOLD)
+
+	await get_tree().create_timer(1.0).timeout
+
+	puzzle_complete.emit(success, {
+		\"tapped\": _tapped_targets
+	})
+"
+
+[node name="PuzzleTapTargets" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource("GDScript_tap")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.15, 0.2, 0.3, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 30.0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 90.0
+offset_right = 400.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="TargetsContainer" type="Control" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+
+[node name="ProgressLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 1
+anchor_left = 1.0
+anchor_right = 1.0
+offset_left = -100.0
+offset_top = 30.0
+offset_right = -20.0
+offset_bottom = 70.0
+grow_horizontal = 0
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 2
+
+[node name="FeedbackLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -80.0
+offset_right = 300.0
+offset_bottom = -40.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1

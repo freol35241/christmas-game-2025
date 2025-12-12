@@ -1,0 +1,190 @@
+[gd_scene load_steps=2 format=3 uid="uid://bxpqnr4m6ysxd"]
+
+[sub_resource type="GDScript" id="GDScript_intro"]
+script/source = "extends Control
+## Intro scene - Opening narrative for Tomtens Försvunna Minnen
+
+signal intro_complete
+
+@onready var background: ColorRect = $Background
+@onready var tomten_silhouette: Polygon2D = $TomtenSilhouette
+@onready var dialogue_label: Label = $DialogueBox/DialogueLabel
+@onready var continue_label: Label = $ContinueLabel
+@onready var snow_particles: CPUParticles2D = $SnowParticles
+
+var _dialogue_index: int = 0
+var _dialogues: Array[String] = [
+	\"[SWEDISH: *A snowy evening outside a small cottage...*]\",
+	\"[SWEDISH: Inside, an old tomte sits by the fire, looking confused.]\",
+	\"[SWEDISH: Tomten: 'Something is wrong... I can't remember...']\",
+	\"[SWEDISH: Tomten: 'Christmas is coming, but I've forgotten how to celebrate.']\",
+	\"[SWEDISH: A letter arrives from Tomtemor, his old friend.]\",
+	\"[SWEDISH: 'Dear Tomten, things are going wrong everywhere!']\",
+	\"[SWEDISH: 'The porridge is ruined, the Lucia procession is lost...']\",
+	\"[SWEDISH: 'Please, you must remember! Christmas depends on you!']\",
+	\"[SWEDISH: Tomten: 'Will you help me find my lost memories?']\",
+]
+
+var _can_advance: bool = false
+var _typing_speed: float = 0.03
+var _is_typing: bool = false
+
+
+func _ready() -> void:
+	continue_label.visible = false
+	_setup_visuals()
+	_show_dialogue()
+
+
+func _setup_visuals() -> void:
+	# Create gradient background (night sky)
+	background.color = Constants.Colors.NIGHT_DEEP_BLUE
+
+	# Setup Tomten silhouette (simple shape for now)
+	_create_tomten_silhouette()
+
+	# Setup snow particles
+	_setup_snow()
+
+
+func _create_tomten_silhouette() -> void:
+	# Create a simple tomte silhouette using polygon
+	var points := PackedVector2Array([
+		Vector2(0, 0),      # Top of hat
+		Vector2(-30, 60),   # Left hat brim
+		Vector2(-40, 80),   # Left head
+		Vector2(-35, 120),  # Left shoulder
+		Vector2(-50, 200),  # Left body
+		Vector2(-30, 250),  # Left bottom
+		Vector2(30, 250),   # Right bottom
+		Vector2(50, 200),   # Right body
+		Vector2(35, 120),   # Right shoulder
+		Vector2(40, 80),    # Right head
+		Vector2(30, 60),    # Right hat brim
+	])
+
+	tomten_silhouette.polygon = points
+	tomten_silhouette.color = Constants.Colors.TOMTEN_RED
+	tomten_silhouette.position = Vector2(960, 700)  # Bottom center
+
+
+func _setup_snow() -> void:
+	snow_particles.emitting = true
+	snow_particles.amount = 100
+	snow_particles.lifetime = 8.0
+	snow_particles.emission_shape = CPUParticles2D.EMISSION_SHAPE_RECTANGLE
+	snow_particles.emission_rect_extents = Vector2(1000, 10)
+	snow_particles.direction = Vector2(0, 1)
+	snow_particles.spread = 15.0
+	snow_particles.gravity = Vector2(0, 50)
+	snow_particles.initial_velocity_min = 20.0
+	snow_particles.initial_velocity_max = 50.0
+	snow_particles.scale_amount_min = 2.0
+	snow_particles.scale_amount_max = 5.0
+	snow_particles.color = Constants.Colors.SNOW_BLUE_WHITE
+	snow_particles.position = Vector2(960, 0)
+
+
+func _show_dialogue() -> void:
+	if _dialogue_index >= _dialogues.size():
+		_finish_intro()
+		return
+
+	_is_typing = true
+	_can_advance = false
+	continue_label.visible = false
+
+	var text := _dialogues[_dialogue_index]
+	dialogue_label.text = \"\"
+
+	# Type out the text
+	for i in range(text.length()):
+		dialogue_label.text += text[i]
+		await get_tree().create_timer(_typing_speed).timeout
+
+	_is_typing = false
+	_can_advance = true
+	continue_label.visible = true
+
+
+func _advance_dialogue() -> void:
+	if _is_typing:
+		# Skip typing animation
+		dialogue_label.text = _dialogues[_dialogue_index]
+		_is_typing = false
+		_can_advance = true
+		continue_label.visible = true
+	elif _can_advance:
+		_dialogue_index += 1
+		_show_dialogue()
+
+
+func _finish_intro() -> void:
+	intro_complete.emit()
+	GameState.advance_to_next_state()
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventMouseButton and event.pressed:
+		_advance_dialogue()
+	elif event is InputEventKey and event.pressed:
+		if event.keycode == KEY_SPACE or event.keycode == KEY_ENTER:
+			_advance_dialogue()
+"
+
+[node name="Intro" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource("GDScript_intro")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.101961, 0.101961, 0.180392, 1)
+
+[node name="SnowParticles" type="CPUParticles2D" parent="."]
+position = Vector2(960, 0)
+emitting = false
+
+[node name="TomtenSilhouette" type="Polygon2D" parent="."]
+position = Vector2(960, 700)
+
+[node name="DialogueBox" type="PanelContainer" parent="."]
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 100.0
+offset_top = -200.0
+offset_right = -100.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+
+[node name="DialogueLabel" type="Label" parent="DialogueBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 32
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="ContinueLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -100.0
+offset_top = -40.0
+offset_right = 100.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 20
+text = "[Press SPACE to continue]"
+horizontal_alignment = 1

@@ -1,0 +1,268 @@
+[gd_scene load_steps=2 format=3 uid="uid://euv2qn8xr9pkdh"]
+
+[sub_resource type="GDScript" id="GDScript_sequence"]
+script/source = "extends Control
+## Sequence puzzle - Simon Says style memory game
+
+signal puzzle_complete(success: bool, result: Dictionary)
+
+@onready var title_label: Label = $TitleLabel
+@onready var instruction_label: Label = $InstructionLabel
+@onready var buttons_container: HBoxContainer = $ButtonsContainer
+@onready var feedback_label: Label = $FeedbackLabel
+@onready var status_label: Label = $StatusLabel
+
+var puzzle_data: Dictionary = {}
+var _buttons: Array[Button] = []
+var _sequence: Array[int] = []
+var _player_sequence: Array[int] = []
+var _is_showing_sequence: bool = false
+var _attempts: int = 0
+var _max_attempts: int = 2
+
+
+func _ready() -> void:
+	pass
+
+
+func setup(data: Dictionary) -> void:
+	puzzle_data = data
+
+	title_label.text = data.get(\"title\", \"[SWEDISH: Remember the sequence!]\")
+	instruction_label.text = data.get(\"instructions\", \"[SWEDISH: Watch and repeat]\")
+
+	var button_labels: Array = data.get(\"buttons\", [\"1\", \"2\", \"3\", \"4\"])
+	_sequence = data.get(\"sequence\", [0, 1, 2, 3])
+	_max_attempts = data.get(\"max_attempts\", 2)
+
+	_create_buttons(button_labels)
+
+	# Start showing sequence after delay
+	await get_tree().create_timer(1.0).timeout
+	_show_sequence()
+
+
+func _create_buttons(labels: Array) -> void:
+	for child in buttons_container.get_children():
+		child.queue_free()
+	_buttons.clear()
+
+	var colors := [
+		Color(0.8, 0.2, 0.2),  # Red
+		Color(0.2, 0.6, 0.2),  # Green
+		Color(0.2, 0.2, 0.8),  # Blue
+		Color(0.8, 0.7, 0.1),  # Yellow
+	]
+
+	for i in range(labels.size()):
+		var button := Button.new()
+		button.text = labels[i] if labels[i] is String else str(labels[i])
+		button.custom_minimum_size = Vector2(150, 150)
+		button.add_theme_font_size_override(\"font_size\", 24)
+
+		# Style with color
+		var style := StyleBoxFlat.new()
+		style.bg_color = colors[i % colors.size()]
+		style.corner_radius_top_left = 10
+		style.corner_radius_top_right = 10
+		style.corner_radius_bottom_left = 10
+		style.corner_radius_bottom_right = 10
+		button.add_theme_stylebox_override(\"normal\", style)
+
+		var pressed_style := style.duplicate()
+		pressed_style.bg_color = colors[i % colors.size()].lightened(0.3)
+		button.add_theme_stylebox_override(\"pressed\", pressed_style)
+
+		button.pressed.connect(_on_button_pressed.bind(i))
+		button.disabled = true  # Disabled during sequence show
+
+		buttons_container.add_child(button)
+		_buttons.append(button)
+
+
+func _show_sequence() -> void:
+	_is_showing_sequence = true
+	status_label.text = \"[SWEDISH: Watch carefully!]\"
+	feedback_label.text = \"\"
+
+	# Disable buttons during sequence
+	for btn in _buttons:
+		btn.disabled = true
+
+	# Show sequence with highlights
+	for i in range(_sequence.size()):
+		await get_tree().create_timer(0.6).timeout
+		_highlight_button(_sequence[i])
+
+	await get_tree().create_timer(0.5).timeout
+
+	# Enable buttons for player input
+	_is_showing_sequence = false
+	status_label.text = \"[SWEDISH: Your turn! Repeat the sequence]\"
+	_player_sequence.clear()
+
+	for btn in _buttons:
+		btn.disabled = false
+
+
+func _highlight_button(index: int) -> void:
+	if index < 0 or index >= _buttons.size():
+		return
+
+	var button := _buttons[index]
+	var original_modulate := button.modulate
+
+	var tween := create_tween()
+	tween.tween_property(button, \"modulate\", Color.WHITE, 0.1)
+	tween.tween_property(button, \"modulate\", original_modulate, 0.2)
+
+
+func _on_button_pressed(index: int) -> void:
+	if _is_showing_sequence:
+		return
+
+	_player_sequence.append(index)
+	_highlight_button(index)
+
+	# Check if matches so far
+	var current_index := _player_sequence.size() - 1
+	if _player_sequence[current_index] != _sequence[current_index]:
+		_on_wrong_sequence()
+		return
+
+	# Check if complete
+	if _player_sequence.size() == _sequence.size():
+		_on_correct_sequence()
+
+
+func _on_correct_sequence() -> void:
+	feedback_label.text = \"[SWEDISH: Perfect! You remembered!]\"
+	feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.SUCCESS_GREEN)
+	status_label.text = \"\"
+
+	# Disable buttons
+	for btn in _buttons:
+		btn.disabled = true
+
+	# Celebration
+	var tween := create_tween()
+	for btn in _buttons:
+		tween.tween_property(btn, \"modulate\", Constants.Colors.HIGHLIGHT_GOLD, 0.1)
+	tween.set_parallel(false)
+	for btn in _buttons:
+		tween.tween_property(btn, \"modulate\", Color.WHITE, 0.2)
+
+	await get_tree().create_timer(1.5).timeout
+
+	puzzle_complete.emit(true, {
+		\"sequence\": _sequence,
+		\"attempts\": _attempts + 1
+	})
+
+
+func _on_wrong_sequence() -> void:
+	_attempts += 1
+	feedback_label.text = \"[SWEDISH: Not quite... Let's try again!]\"
+	feedback_label.add_theme_color_override(\"font_color\", Constants.Colors.ERROR_RED)
+
+	# Disable buttons
+	for btn in _buttons:
+		btn.disabled = true
+
+	if _attempts >= _max_attempts:
+		# Auto-pass after max attempts
+		await get_tree().create_timer(1.0).timeout
+		feedback_label.text = \"[SWEDISH: Good try! Let's move on.]\"
+		puzzle_complete.emit(true, {
+			\"sequence\": _sequence,
+			\"attempts\": _attempts,
+			\"auto_passed\": true
+		})
+	else:
+		# Show sequence again
+		await get_tree().create_timer(1.5).timeout
+		_show_sequence()
+"
+
+[node name="PuzzleSequence" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+script = SubResource("GDScript_sequence")
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+color = Color(0.15, 0.15, 0.2, 1)
+
+[node name="TitleLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 30.0
+offset_right = 300.0
+offset_bottom = 80.0
+theme_override_font_sizes/font_size = 36
+horizontal_alignment = 1
+
+[node name="InstructionLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -400.0
+offset_top = 90.0
+offset_right = 400.0
+offset_bottom = 130.0
+theme_override_font_sizes/font_size = 24
+horizontal_alignment = 1
+
+[node name="StatusLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 5
+anchor_left = 0.5
+anchor_right = 0.5
+offset_left = -300.0
+offset_top = 150.0
+offset_right = 300.0
+offset_bottom = 190.0
+theme_override_font_sizes/font_size = 28
+theme_override_colors/font_color = Color(1, 0.9, 0.7, 1)
+horizontal_alignment = 1
+
+[node name="ButtonsContainer" type="HBoxContainer" parent="."]
+layout_mode = 1
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -350.0
+offset_top = -75.0
+offset_right = 350.0
+offset_bottom = 75.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/separation = 30
+alignment = 1
+
+[node name="FeedbackLabel" type="Label" parent="."]
+layout_mode = 1
+anchors_preset = 7
+anchor_left = 0.5
+anchor_top = 1.0
+anchor_right = 0.5
+anchor_bottom = 1.0
+offset_left = -300.0
+offset_top = -100.0
+offset_right = 300.0
+offset_bottom = -50.0
+grow_horizontal = 2
+grow_vertical = 0
+theme_override_font_sizes/font_size = 28
+horizontal_alignment = 1
