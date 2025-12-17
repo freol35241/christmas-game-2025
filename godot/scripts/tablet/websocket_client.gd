@@ -174,7 +174,7 @@ func _layer_to_string(layer: int) -> String:
 		_: return "UNKNOWN"
 
 
-func is_connected() -> bool:
+func is_server_connected() -> bool:
 	return _connected
 
 
