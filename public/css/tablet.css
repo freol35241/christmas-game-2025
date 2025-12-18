@@ -1,0 +1,476 @@
+/* Tablet Styles - Responsive touch-friendly interface */
+
+body.tablet-mode {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#tablet-container {
+  flex-direction: column;
+  background: linear-gradient(135deg, var(--deep-blue) 0%, var(--navy) 100%);
+}
+
+#tablet-ui {
+  width: 100%;
+  height: 100%;
+  position: relative;
+}
+
+.tablet-screen {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  padding: 20px;
+  overflow-y: auto;
+}
+
+.tablet-screen.active {
+  display: flex;
+  flex-direction: column;
+}
+
+/* Waiting screen */
+#tablet-waiting {
+  justify-content: center;
+  align-items: center;
+}
+
+.waiting-content {
+  text-align: center;
+}
+
+.waiting-content p {
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+/* Puzzle container */
+#tablet-puzzle {
+  padding: 20px;
+}
+
+.puzzle {
+  max-width: 600px;
+  margin: 0 auto;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.puzzle-instruction {
+  font-size: 1.5rem;
+  color: var(--gold);
+  text-align: center;
+  margin-bottom: 30px;
+  line-height: 1.4;
+}
+
+/* Layer indicator */
+.layer-indicator {
+  text-align: center;
+  padding: 10px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 10px;
+  margin-bottom: 20px;
+  font-size: 1.1rem;
+  color: var(--amber);
+}
+
+/* Puzzle progress */
+.puzzle-progress {
+  text-align: center;
+  margin-top: 20px;
+  font-size: 1.2rem;
+  color: var(--text-light);
+}
+
+/* ==================== */
+/* Drag & Drop Puzzle   */
+/* ==================== */
+
+.drag-drop-puzzle .drop-zone {
+  min-height: 150px;
+  border: 3px dashed var(--gold);
+  border-radius: 20px;
+  margin-bottom: 30px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+  padding: 20px;
+}
+
+.drag-drop-puzzle .drop-zone.drag-over {
+  background: rgba(255, 215, 0, 0.2);
+  border-style: solid;
+}
+
+.drop-zone-label {
+  color: var(--amber);
+  font-size: 1.2rem;
+  opacity: 0.7;
+}
+
+.dropped-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+  margin-top: 10px;
+}
+
+.draggable-items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 15px;
+  justify-content: center;
+}
+
+.draggable-item {
+  padding: 15px 25px;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  color: var(--text-light);
+  font-size: 1.1rem;
+  cursor: grab;
+  transition: all 0.2s ease;
+  user-select: none;
+  touch-action: none;
+}
+
+.draggable-item:active {
+  cursor: grabbing;
+}
+
+.draggable-item.dragging {
+  opacity: 0.5;
+  transform: scale(1.1);
+}
+
+.draggable-item.correct {
+  background: var(--success-green);
+  border-color: var(--success-green);
+}
+
+.draggable-item.incorrect {
+  background: var(--error-red);
+  border-color: var(--error-red);
+}
+
+/* ==================== */
+/* Cipher Puzzle        */
+/* ==================== */
+
+.cipher-puzzle .cipher-display {
+  text-align: center;
+  margin-bottom: 30px;
+}
+
+.cipher-code {
+  font-size: 2.5rem;
+  font-family: 'Courier New', monospace;
+  color: var(--gold);
+  letter-spacing: 5px;
+  margin-bottom: 15px;
+  padding: 20px;
+  background: rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+}
+
+.cipher-key {
+  font-size: 1rem;
+  color: var(--amber);
+  opacity: 0.8;
+}
+
+.cipher-input-group {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.cipher-input {
+  padding: 15px 20px;
+  font-size: 1.5rem;
+  text-align: center;
+  text-transform: uppercase;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  border-radius: 10px;
+  color: var(--text-light);
+  width: 250px;
+  outline: none;
+}
+
+.cipher-input:focus {
+  border-color: var(--amber);
+  box-shadow: 0 0 10px rgba(255, 215, 0, 0.3);
+}
+
+.cipher-input.correct {
+  background: var(--success-green);
+}
+
+.cipher-input.incorrect {
+  background: var(--error-red);
+}
+
+.hint-container {
+  text-align: center;
+  margin-top: 20px;
+}
+
+.hint-button {
+  padding: 10px 20px;
+  background: transparent;
+  border: 1px solid var(--amber);
+  color: var(--amber);
+  border-radius: 5px;
+  cursor: pointer;
+}
+
+.hint-text {
+  margin-top: 10px;
+  color: var(--gold);
+  font-style: italic;
+}
+
+.attempts-display {
+  text-align: center;
+  margin-top: 15px;
+  color: var(--amber);
+  opacity: 0.8;
+}
+
+/* ==================== */
+/* Location Select      */
+/* ==================== */
+
+.location-select-puzzle .discussion-prompt {
+  text-align: center;
+  padding: 20px;
+  background: rgba(255, 215, 0, 0.1);
+  border-radius: 15px;
+  margin-bottom: 30px;
+}
+
+.discussion-icon {
+  font-size: 2rem;
+  display: block;
+  margin-bottom: 10px;
+}
+
+.location-options {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.location-option {
+  padding: 20px;
+  background: var(--navy);
+  border: 2px solid var(--gold);
+  border-radius: 15px;
+  color: var(--text-light);
+  font-size: 1.2rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+}
+
+.location-option:hover {
+  background: rgba(255, 215, 0, 0.1);
+}
+
+.location-option.selected {
+  background: rgba(255, 215, 0, 0.2);
+  border-width: 3px;
+}
+
+.location-option.correct {
+  background: var(--success-green);
+  border-color: var(--success-green);
+}
+
+.location-option.incorrect {
+  background: var(--error-red);
+  border-color: var(--error-red);
+}
+
+.confirm-section {
+  text-align: center;
+  margin-top: 30px;
+}
+
+.confirm-section p {
+  margin-bottom: 15px;
+  color: var(--amber);
+}
+
+.confirm-btn {
+  background: var(--success-green);
+}
+
+/* ==================== */
+/* Tap Targets Puzzle   */
+/* ==================== */
+
+.tap-targets-puzzle .tap-area {
+  position: relative;
+  width: 100%;
+  height: 400px;
+  background: rgba(0, 0, 0, 0.2);
+  border-radius: 20px;
+  margin: 20px 0;
+}
+
+.tap-target {
+  position: absolute;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  background: var(--gold);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.5rem;
+  cursor: pointer;
+  transform: translate(-50%, -50%);
+  transition: all 0.2s ease;
+  border: 3px solid var(--white);
+}
+
+.tap-target:hover {
+  transform: translate(-50%, -50%) scale(1.1);
+}
+
+.tap-target.tapped {
+  background: var(--success-green);
+  transform: translate(-50%, -50%) scale(0.8);
+  opacity: 0.7;
+}
+
+.tap-target.incorrect {
+  background: var(--error-red);
+}
+
+/* Hidden targets (reindeer) */
+.hidden-targets .tap-target.hidden {
+  background: rgba(139, 69, 19, 0.3);
+  border-color: transparent;
+}
+
+.hidden-targets .tap-target.hidden:hover {
+  background: rgba(139, 69, 19, 0.5);
+}
+
+.hidden-targets .tap-target.hidden.tapped {
+  background: var(--success-green);
+  border-color: var(--white);
+}
+
+/* ==================== */
+/* Sequence Puzzle      */
+/* ==================== */
+
+.sequence-puzzle .sequence-display {
+  text-align: center;
+  padding: 20px;
+  min-height: 80px;
+}
+
+.sequence-buttons {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 20px;
+  max-width: 400px;
+  margin: 20px auto;
+}
+
+.sequence-btn {
+  aspect-ratio: 1;
+  border: 4px solid var(--white);
+  border-radius: 20px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  opacity: 0.7;
+}
+
+.sequence-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+
+.sequence-btn:not(:disabled):hover {
+  opacity: 1;
+  transform: scale(1.05);
+}
+
+.sequence-btn.flash {
+  opacity: 1;
+  transform: scale(1.1);
+  box-shadow: 0 0 30px currentColor;
+}
+
+.sequence-btn.correct {
+  box-shadow: 0 0 20px var(--success-green);
+}
+
+.sequence-btn.incorrect {
+  box-shadow: 0 0 20px var(--error-red);
+}
+
+.sequence-puzzle .puzzle-button {
+  display: block;
+  margin: 20px auto;
+}
+
+/* ==================== */
+/* Responsive Design    */
+/* ==================== */
+
+@media (max-width: 600px) {
+  .puzzle-instruction {
+    font-size: 1.2rem;
+  }
+
+  .draggable-item {
+    padding: 12px 18px;
+    font-size: 1rem;
+  }
+
+  .cipher-code {
+    font-size: 1.8rem;
+    letter-spacing: 3px;
+  }
+
+  .cipher-input {
+    width: 100%;
+    max-width: 250px;
+  }
+
+  .location-option {
+    padding: 15px;
+    font-size: 1rem;
+  }
+
+  .tap-target {
+    width: 50px;
+    height: 50px;
+    font-size: 1.2rem;
+  }
+
+  .sequence-buttons {
+    gap: 15px;
+  }
+}
+
+@media (max-height: 500px) {
+  .tap-targets-puzzle .tap-area {
+    height: 250px;
+  }
+}

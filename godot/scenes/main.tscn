@@ -1,7 +1,0 @@
-[gd_scene load_steps=2 format=3 uid="uid://cj8qnpvr5yw8h"]
-
-[ext_resource type="PackedScene" uid="uid://b7vy2x3qnxqkd" path="res://scenes/tv/tv_main.tscn" id="1_tv_main"]
-
-[node name="Main" type="Node"]
-
-[node name="TVMain" parent="." instance=ExtResource("1_tv_main")]

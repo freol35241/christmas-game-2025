@@ -1,0 +1,243 @@
+/* Common styles for both TV and Tablet */
+
+:root {
+  /* Colors */
+  --deep-blue: #1a1a2e;
+  --navy: #16213e;
+  --white: #ffffff;
+  --amber: #ffb347;
+  --deep-orange: #ff8c00;
+  --brown: #8b4513;
+  --tomte-red: #8b0000;
+  --highlight: #c41e3a;
+  --success-green: #4a7c4e;
+  --error-red: #8b3a3a;
+  --gold: #ffd700;
+  --text-light: #f5f5f5;
+  --text-dark: #2d2d2d;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body {
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  background-color: var(--deep-blue);
+  color: var(--text-light);
+}
+
+/* Screen management */
+.screen {
+  display: none;
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+}
+
+.screen.active {
+  display: flex;
+}
+
+/* Device selection screen */
+#device-select {
+  justify-content: center;
+  align-items: center;
+  background: linear-gradient(135deg, var(--deep-blue) 0%, var(--navy) 100%);
+}
+
+.device-select-container {
+  text-align: center;
+  padding: 40px;
+}
+
+.device-select-container h1 {
+  font-size: 3rem;
+  color: var(--gold);
+  margin-bottom: 20px;
+  font-family: Georgia, serif;
+}
+
+.device-select-container > p {
+  font-size: 1.2rem;
+  margin-bottom: 30px;
+  color: var(--text-light);
+}
+
+.device-buttons {
+  display: flex;
+  gap: 30px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.device-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 30px 50px;
+  border: 3px solid var(--gold);
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.device-btn:hover {
+  background: rgba(255, 215, 0, 0.1);
+  transform: scale(1.05);
+}
+
+.device-btn .icon {
+  font-size: 4rem;
+  margin-bottom: 15px;
+}
+
+.device-btn .label {
+  font-size: 1.5rem;
+  color: var(--text-light);
+}
+
+.hint {
+  margin-top: 30px;
+  font-size: 0.9rem;
+  color: var(--amber);
+  opacity: 0.8;
+}
+
+/* Debug panel */
+#debug-panel {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background: rgba(0, 0, 0, 0.8);
+  padding: 15px;
+  border-radius: 10px;
+  z-index: 9999;
+  font-size: 12px;
+}
+
+#debug-panel.hidden {
+  display: none;
+}
+
+#debug-panel h3 {
+  margin-bottom: 10px;
+  color: var(--gold);
+}
+
+.debug-buttons {
+  display: flex;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.debug-buttons button {
+  padding: 5px 10px;
+  background: var(--navy);
+  border: 1px solid var(--gold);
+  color: var(--text-light);
+  cursor: pointer;
+  border-radius: 5px;
+}
+
+.debug-buttons button:hover {
+  background: var(--gold);
+  color: var(--text-dark);
+}
+
+/* Animations */
+@keyframes shake {
+  0%, 100% { transform: translateX(0); }
+  10%, 30%, 50%, 70%, 90% { transform: translateX(-5px); }
+  20%, 40%, 60%, 80% { transform: translateX(5px); }
+}
+
+.shake {
+  animation: shake 0.5s ease-in-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.fade-in {
+  animation: fadeIn 0.5s ease-in-out;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+
+.pulse {
+  animation: pulse 2s infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid rgba(255, 215, 0, 0.3);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin: 0 auto 20px;
+}
+
+/* Puzzle feedback */
+.puzzle-feedback {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-size: 4rem;
+  padding: 20px 40px;
+  border-radius: 20px;
+  z-index: 1000;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.puzzle-feedback.success {
+  background: var(--success-green);
+  color: var(--white);
+}
+
+.puzzle-feedback.error {
+  background: var(--error-red);
+  color: var(--white);
+}
+
+/* Common button styles */
+.puzzle-button {
+  padding: 15px 40px;
+  font-size: 1.2rem;
+  background: var(--gold);
+  color: var(--text-dark);
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  font-weight: bold;
+}
+
+.puzzle-button:hover {
+  background: var(--amber);
+  transform: scale(1.05);
+}
+
+.puzzle-button:active {
+  transform: scale(0.95);
+}
